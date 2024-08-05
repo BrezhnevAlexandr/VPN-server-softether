@@ -16,7 +16,7 @@ docker run --privileged -d -p 2222:22 -p 443:443 --name test_task task_test:0.0.
 If we re-create the containerp on the machine, we need to delete the old entry:
 ssh-keygen -f "/home/student/.ssh/known_hosts" -R "[localhost]:2222"
 4. Go to the container, check availability
-# check ssh availability
+check ssh availability:
 ssh ansible@localhost -p 2222
 5. Replace the default passwords in the secrets file
 ansible-vault encrypt secrets.yml
@@ -27,5 +27,5 @@ ansible-vault encrypt secrets.yml
 cd vpn_setup/
 ansible-playbook -i inventory.ini site.yml --ask-vault-pass
 9. For additional configuration, you can use the server console:
-# vpn console
+vpn console:
 /opt/vpnserver/vpncmd 
