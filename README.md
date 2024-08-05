@@ -11,7 +11,7 @@ git clone https://github.com/BrezhnevAlexandr/VPN-server-softether.git
 Before building, you need to set a password for the ansible user in the docker file.
 build the image:
 docker build -t task_test:0.0.1 .
-3. Run the container
+3. Run the container /n
 docker run --privileged -d -p 2222:22 -p 443:443 --name test_task task_test:0.0.1
 If we re-create the containerp on the machine, we need to delete the old entry:
 ssh-keygen -f "/home/student/.ssh/known_hosts" -R "[localhost]:2222"
