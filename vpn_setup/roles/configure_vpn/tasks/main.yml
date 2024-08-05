@@ -1,0 +1,15 @@
+﻿---
+- name: Ensure VPN server is running
+  shell: |
+    if ! pgrep vpnserver > /dev/null; then
+      /opt/vpnserver/vpnserver start
+    fi
+
+- name: Create VirtualHubs and Users
+  softether_hub:
+    base_url: "{{ base_url }}"
+    auth_user: "{{ admin_user }}"
+    auth_password: "{{ admin_password }}"
+    hub_admin_password: "{{ hub_admin_password }}"
+    user_passwords: "{{ user_passwords }}"
+    hubs: "{{ hubs }}"

@@ -1,0 +1,30 @@
+- hosts: all
+  become: yes
+  vars_files:
+    - secrets.yml
+  vars:
+    base_url: "https://localhost/api"
+    admin_user: "admin_user"
+    
+    # Определение хабов и пользователей
+    hubs:
+      - name: PROD
+        users:
+          - pr_user1
+          - pr_user2
+        no_enum: true
+      - name: TEST
+        users:
+          - t_user1
+          - t_user2
+        no_enum: true
+      - name: STAFF
+        users:
+          - ceo
+          - cto
+          - admin
+        no_enum: true
+          
+  roles:
+    - install_vpn
+    - configure_vpn

@@ -1,0 +1,109 @@
+---
+- name: Download SoftEther VPN Server
+  get_url:
+    url: "https://www.softether-download.com/files/softether/v4.43-9799-beta-2023.08.31-tree/Linux/SoftEther_VPN_Server/64bit_-_Intel_x64_or_AMD64/softether-vpnserver-v4.43-9799-beta-2023.08.31-linux-x64-64bit.tar.gz"
+    dest: /tmp/softether.tar.gz
+
+- name: Install dependencies
+  apt:
+    name: 
+      - build-essential
+      - libreadline-dev
+      - libssl-dev
+      - libncurses5-dev
+      - zlib1g-dev
+      - gawk
+      - gcc
+      - m4
+      - make
+      - golang
+      - git
+      - python3-pip
+      - python3-venv     
+    state: present
+    update_cache: yes
+    
+- name: Create virtual environment
+  command: python3 -m venv /opt/venv
+
+- name: Install SoftEtherPy in virtual environment
+  command: /opt/venv/bin/pip install SoftEtherPy
+
+- name: Extract SoftEther VPN Server
+  unarchive:
+    src: /tmp/softether.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Build SoftEther VPN Server
+  shell: |
+    cd /opt/vpnserver
+    make    
+  args:
+    chdir: /opt/vpnserver
+
+- name: Clone go-softether-api repository
+  git:
+    repo: 'https://github.com/terassyi/go-softether-api.git'
+    dest: /opt/go-softether-api
+    version: master
+
+- name: Build go-softether-api
+  shell: |
+    cd /opt/go-softether-api
+    go build -o /usr/local/bin/softether-cli
+  args:
+    creates: /usr/local/bin/softether-cli
+    
+- name: Ensure softether-cli is executable
+  file:
+    path: /usr/local/bin/softether-cli
+    mode: '0755'
+    state: file
+
+- name: Install Python packages
+  pip:
+    name:
+      - softetherPy
+      - ansible
+      - requests
+    state: present    
+
+- name: Start VPN server
+  shell: |
+    /opt/vpnserver/vpnserver start
+
+- name: Ensure VPN server is running
+  shell: |
+    if ! pgrep vpnserver > /dev/null; then
+      /opt/vpnserver/vpnserver start
+    fi
+    
+ 
+# Раскоментировать при использовании systemd    
+#- name: Create VPN server service file
+#  copy:
+#    dest: /etc/systemd/system/vpnserver.service
+#    content: |
+#      [Unit]
+#      Description=SoftEther VPN Server
+#      After=network.target
+#
+#      [Service]
+#      ExecStart=/opt/softether-src/vpnserver start
+#      ExecStop=/opt/softether-src/vpnserver stop
+#      Type=forking
+#      PIDFile=/var/run/vpnserver.pid
+#
+#      [Install]
+#      WantedBy=multi-user.target
+#
+#- name: Reload systemd daemon
+#  systemd:
+#    daemon_reload: yes
+#
+#- name: Ensure VPN server is running
+#  service:
+#    name: vpnserver
+#    state: started
+#    enabled: yes
