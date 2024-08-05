@@ -4,6 +4,7 @@ from ansible.module_utils.basic import AnsibleModule
 import requests
 import json
 
+# Проверяем есть ли хабы
 def check_hub_exists(base_url, hub_name, auth):
     url = f"{base_url}"
     payload = {
@@ -23,6 +24,8 @@ def check_hub_exists(base_url, hub_name, auth):
     except Exception as e:
         return {"error": f"Unexpected Error: {str(e)}"}
 
+
+# Функция создания хаба
 def create_hub(base_url, hub_name, admin_password, no_enum, auth):
     if check_hub_exists(base_url, hub_name, auth):
         return {"message": f"Hub {hub_name} already exists."}
@@ -56,6 +59,8 @@ def create_hub(base_url, hub_name, admin_password, no_enum, auth):
     except json.decoder.JSONDecodeError:
         return {"error": "JSON Decode Error"}
 
+
+# Проверяем есть ли пользователи
 def check_user_exists(base_url, hub_name, username, auth):
     url = f"{base_url}"
     payload = {
@@ -75,6 +80,7 @@ def check_user_exists(base_url, hub_name, username, auth):
     except Exception as e:
         return {"error": f"Unexpected Error: {str(e)}"}
 
+# Функция создания пользователя
 def create_user(base_url, hub_name, username, user_password, auth):
     if check_user_exists(base_url, hub_name, username, auth):
         return {"message": f"User {username} already exists in hub {hub_name}."}
@@ -87,7 +93,7 @@ def create_user(base_url, hub_name, username, user_password, auth):
         "params": {
             "HubName_str": hub_name,
             "Name_str": username,
-            "AuthType_u32": 1,  # 1 for password authentication
+            "AuthType_u32": 1,
             "Auth_Password_str": user_password
         }
     }
@@ -133,13 +139,13 @@ def main():
         no_enum = hub.get('no_enum', False)
         users = hub.get('users', [])
 
-        # Create VirtualHub
+        # Создание хаба
         hub_result = create_hub(base_url, hub_name, hub_admin_password, no_enum, auth)
         results.append(hub_result)
 
-        # Create users in the VirtualHub
+        # Создание пользователя в хабе
         for user in users:
-            user_password = user_passwords.get(user, "default_password")  # Используйте заданный пароль для каждого пользователя
+            user_password = user_passwords.get(user, "default_password")
             user_result = create_user(base_url, hub_name, user, user_password, auth)
             results.append(user_result)
 
